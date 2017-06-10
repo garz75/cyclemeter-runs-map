@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <title>Garz Hikes and Rides</title>
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+    
+    <!-- CSS Reset -->
+    <link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css">
+
+    <!-- Milligram CSS minified -->
+    <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+    </head>
+  <body>
+    <div class="section group">
+      <div id="map" class="col span_80">
+      </div>
+      <div class="col span_20">
+	<h3>Garz Hikes and Rides</h3>
+	<div id="loading">
+	  <img src="img/loading.gif">
+	</div>   
+	<a onClick="map.fitBounds(bound);" href="#">Reset zoom</a><br/>
+	Zoom and click on the markers to display more info on the workout
+	<div id="activityDetails">
+	  <table>
+	    <thead>
+	      <tr>
+		<th>Activity</th>
+		<th id="activity">Hike</th>
+	      </tr>
+	    </thead>
+	    <tbody>
+	      <tr>
+		<td>Starting Date</td>
+		<td id="startTime"></td>
+	      </tr>
+	      <tr>
+		<td>Activity Duration</td>
+		<td id="runTime">02:10:24</td>
+	      </tr>
+	      <tr>
+		<td>Distance (km)</td>
+		<td id="distance">25.1</td>
+	      </tr>
+	      <tr>
+		<td>Stopped Time</td>
+		<td id="stoppedTime">00:50:54</td>
+	      </tr>
+	      <tr>
+		<td>Average Speed (km/h)</td>
+		<td id="avgSpeed">25.1</td>
+	      </tr>
+	      <tr>
+		<td>Maximum Speed (km/h)</td>
+		<td id="maxSpeed">25.1</td>
+	      </tr>
+	      <tr>
+		<td>Ascent</td>
+		<td id="ascent">00:50:54</td>
+	      </tr>
+	      <tr>
+		<td>Descent</td>
+		<td id="descent">00:50:54</td>
+	      </tr>
+	      <tr>
+		<td>Calories</td>
+		<td id="calories">00:50:54</td>
+	      </tr>
+	      <tr>
+		<td>Average Heart Rate</td>
+		<td id="avgHeartRate">00:50:54</td>
+	      </tr>
+	      <tr>
+		<td>Max. Heart Rate</td>
+		<td id="maxHeartRate">00:50:54</td>
+	      </tr>
+	      <tr>
+		<td><a href="#" target="_blank" id="url">More details</a> </td>
+		<td><a href="#"  id="kmlUrl">KML file</a> </td>
+	      </tr>
+	    </tbody>
+	  </table>
+	</div>
+      </div>
+      <script language="javascript" type="text/javascript" src="code.js"></script>
+      <script async defer
+	      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClD6LibYmhb33Mc6bbA2Vq8xamo9hxmWU&callback=initMap">
+	var map = null;
+	var bound = null; 
+      </script>
+  </body>
+</html>
+

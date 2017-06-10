@@ -1,0 +1,68 @@
+/*  SECTIONS adapted from http://www.responsivegridsystem.com  */
+.section {
+    clear: both;
+    padding: 0px;
+    margin: 0px;
+    height:100%
+}
+/*  COLUMN SETUP  */
+.col {
+    display: block;
+    float:left;
+    margin: 0% 0 0% 0%;
+}
+.col:first-child { margin-left: 0; }
+
+/*  GROUPING  */
+.group:before,
+.group:after { content:""; display:table; }
+.group:after { clear:both;}
+.group { zoom:1; /* For IE 6/7 */ }
+/*  GRID OF TWO  */
+.span_80 {
+    width: 80%;
+}
+.span_20 {
+    width: 20%;
+}
+
+/*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
+
+@media only screen and (max-width: 480px) {
+    .col { 
+	margin: 0% 0 0% 0%;
+	}
+}
+
+@media only screen and (max-width: 480px) {
+    .span_80 { width: 100%; height:70%;}
+    .span_20 { width: 100%; height:30%;}
+}
+#map {
+    height:100%;
+}
+
+
+/* Optional: Makes the sample page fill the window. */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+#loading {
+    display:none
+    left:50%;
+    top:50%;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    position:absolute;
+    border: 1px solid black;
+}
+#activityDetails {
+    display:none;
+    font-size: 80%;
+}
+td {
+    padding: 0
+    } 

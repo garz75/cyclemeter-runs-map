@@ -2,17 +2,15 @@
 
 use strict;
 use CGI;
-use LWP::UserAgent;
-use Data::Dumper;
 use JSON::XS;
-use Data::Dumper;
 use DateTime;
+use DBI;
+
 our $q = new CGI;
 print $q->header(-type => "application/json");
 
 
-use DBI;
-my $dbfile = "./Meter.db";
+my $dbfile = "/home/garzon/Meter.db";
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","");
 
 
@@ -68,7 +66,5 @@ while (my $d = $sth->fetchrow_hashref) {
     push @result , $d;
 }
 $dbh->disconnect;
-
-use JSON::XS;
 
 print encode_json \@result;

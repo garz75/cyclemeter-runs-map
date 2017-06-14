@@ -5,13 +5,6 @@
           zoom: 3,
           center: {lat: 44.397515,  lng: -52.857104  }
         });
-
-//        var ctaLayer = new google.maps.KmlLayer({
- //         url: 'http://server.garzon.fr/maps/liste_kml.cgi?date=$t',
-//          map: map
-//       });
-
-
 	getJSON('http://server.garzon.fr/maps/runs.json.cgi', 
 		function(data) {
 		    loadData(data);
@@ -19,7 +12,7 @@
 		function(data) {
 		    alert('Erreur Loading Data ' + data);
 		}
-	    );
+	       );
 	function loadData(data) {
 	    var activityIcons = {
 		3: 'https://mt0.google.com/vt/icon/name=icons/onion/SHARED-mymaps-container-bg_4x.png,icons/onion/SHARED-mymaps-container_4x.png,icons/onion/1596-hiking-solo_4x.png&highlight=ff00000,3949ab,ff000000&scale=4;',
@@ -28,6 +21,7 @@
 	    };
 	    var runLayer = null;
 	    var currentMarker = null;
+	    var markers = [];
 	    for (var i = 0; i < data.length; i++) {
 		//console.log(data[i]);
 		var title = data[i].activity + ', on ' + data[i].date + ': '+ data[i].distance + ' km';
@@ -40,22 +34,24 @@
 		    });
 		bound.extend(marker.getPosition());
 		marker.addListener('click', createCallBack(data[i],marker));
-		
 		function createCallBack(theObj,theMarker) {
 		    var myObj=  theObj;
 		    var myMarker = theMarker;
 		    return function() {
 			
-			console.log(myObj);
+			//console.log(myObj);
 			if (currentMarker != myMarker) {
 			    currentMarker = myMarker;
 			    if (runLayer != null) { 
 				runLayer.setMap(null);
 			    }
 			    updateInfo(myObj);
+			    var date = (new Date()).getTime();
+			    var k = myObj.kmlUrl + '?' + date ; 
+			    console.log(k);
 			    runLayer = new google.maps.KmlLayer(
 				{
-				  url: myObj.kmlUrl,
+				  url: k,
 				  map: map,
 				  preserveViewport:  false
 				}
@@ -98,9 +94,12 @@
 			div.style.display= "inline";
 		    }
 		}
-		
+		markers.push(marker);
 	    }
 	    map.fitBounds(bound);
+	    // Add a marker clusterer to manage the markers.
+            var markerCluster = new MarkerClusterer(map, markers,
+						    {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
 	    document.getElementById("loading").style.display = "none";
 	}
 }

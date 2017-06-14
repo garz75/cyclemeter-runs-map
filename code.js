@@ -22,6 +22,7 @@
 	    var runLayer = null;
 	    var currentMarker = null;
 	    var markers = [];
+	    var geocoder = new google.maps.Geocoder;
 	    for (var i = 0; i < data.length; i++) {
 		//console.log(data[i]);
 		var title = data[i].activity + ', on ' + data[i].date + ': '+ data[i].distance + ' km';
@@ -39,7 +40,7 @@
 		    var myMarker = theMarker;
 		    return function() {
 			
-			//console.log(myObj);
+			console.log(myObj);
 			if (currentMarker != myMarker) {
 			    currentMarker = myMarker;
 			    if (runLayer != null) { 
@@ -48,7 +49,6 @@
 			    updateInfo(myObj);
 			    var date = (new Date()).getTime();
 			    var k = myObj.kmlUrl + '?' + date ; 
-			    console.log(k);
 			    runLayer = new google.maps.KmlLayer(
 				{
 				  url: k,
@@ -91,6 +91,17 @@
 			for (let u of urls) {
 			    document.getElementById(u).setAttribute('href', obj[u]);
 			}
+			geocoder.geocode({'location': {lat: obj.latitude, lng: obj.longitude}}, function(results, status) {
+			    if (status === 'OK') {
+				if (results[1]) {
+				    document.getElementById("address").innerHTML=results[0].formatted_address;
+				} else {
+				    document.getElementById("address").innerHTML="QQQQ";
+				}
+			    } else {
+				document.getElementById("address").innerHTML = 'Geocoder failed due to: ' + status;
+			    }
+			});
 			div.style.display= "inline";
 		    }
 		}

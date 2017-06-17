@@ -30,6 +30,9 @@ select
     round(distance / runTime * 3.6,2) as 'avgSpeed',
     round(maxSpeed * 3.6,2) as 'maxSpeed',
     time(runTime,'unixepoch') as 'runTime',
+    round(steps/runTime*60,1) as 'stepsPM',
+    round(maxStepsPM,1) as 'maxStepsPM',
+    steps,
     avgHeartRate,
     maxHeartRate
 from

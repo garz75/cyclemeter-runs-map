@@ -13,7 +13,6 @@ print $q->header(-type => "application/json");
 my $dbfile = "/home/garzon/Meter.db";
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","");
 
-
 my $statement = << "EOF"; 
 select
     latitude,
@@ -53,10 +52,13 @@ my @result;
 my $activity = {
     3 => "Hike",
     4 => "Cycle",
+    6 => "DownhillSki",
     10 => "Car"
 };
 
 while (my $d = $sth->fetchrow_hashref) {
+    # For some reason, DateTime does not understand this TZ, so work around it
+    $d->{startTimeZone} = 'Europe/Paris' if $d->{startTimeZone} eq "Etc/GMT-2";
     my $dt = DateTime->from_epoch( epoch => $d->{startTime} , time_zone  => $d->{startTimeZone} );
     my $date = $dt->strftime("%Y-%m-%d");
     $d->{url} = 'http://cyclemeter.com/' .$d->{appInstanceID}  . '/'. $activity->{$d->{activityID}} . '-' . $dt->strftime("%Y%m%d-%H%M");

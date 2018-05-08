@@ -17,7 +17,8 @@
 	    var activityIcons = {
 		3: 'https://mt0.google.com/vt/icon/name=icons/onion/SHARED-mymaps-container-bg_4x.png,icons/onion/SHARED-mymaps-container_4x.png,icons/onion/1596-hiking-solo_4x.png&highlight=ff00000,3949ab,ff000000&scale=4;',
 		4: 'https://mt0.google.com/vt/icon/name=icons/onion/SHARED-mymaps-container-bg_4x.png,icons/onion/SHARED-mymaps-container_4x.png,icons/onion/1522-bicycle_4x.png&highlight=ff000000,288d1,ff000000&scale=4;',
-		10: 'https://mt0.google.com/vt/icon/name=icons/onion/SHARED-mymaps-container-bg_4x.png,icons/onion/SHARED-mymaps-container_4x.png,icons/onion/1538-car_4x.png&highlight=ff000000,97a7,ff000000&scale=4;'
+		10: 'https://mt0.google.com/vt/icon/name=icons/onion/SHARED-mymaps-container-bg_4x.png,icons/onion/SHARED-mymaps-container_4x.png,icons/onion/1538-car_4x.png&highlight=ff000000,97a7,ff000000&scale=4;',
+		6:  'https://mt0.google.com/vt/icon/name=icons/onion/SHARED-mymaps-container-bg_4x.png,icons/onion/SHARED-mymaps-container_4x.png,icons/onion/1688-ski-downhill_4x.png&highlight=ff000000,288d1,ff000000&scale=4;'
 	    };
 	    var runLayer = null;
 	    var currentMarker = null;

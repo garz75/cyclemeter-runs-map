@@ -25,6 +25,7 @@ select
     round(descent,0) as descent,
     round(calories,0) as calories,
     strftime("%s",starttime) as 'startTime',
+    strftime("%f",starttime) as 'startSeconds',
     round(distance / 1000,2) as "distance",
     round(distance / runTime * 3.6,2) as 'avgSpeed',
     round(maxSpeed * 3.6,2) as 'maxSpeed',
@@ -56,18 +57,28 @@ my $activity = {
     10 => "Car"
 };
 
+
 while (my $d = $sth->fetchrow_hashref) {
     # For some reason, DateTime does not understand this TZ, so work around it
     $d->{startTimeZone} = 'Europe/Paris' if $d->{startTimeZone} eq "Etc/GMT-2";
     my $dt = DateTime->from_epoch( epoch => $d->{startTime} , time_zone  => $d->{startTimeZone} );
     my $date = $dt->strftime("%Y-%m-%d");
-    $d->{url} = 'http://cyclemeter.com/' .$d->{appInstanceID}  . '/'. $activity->{$d->{activityID}} . '-' . $dt->strftime("%Y%m%d-%H%M");
+    my $secs = "" ;
+    # New versions of Cyclemeter after the cutoff date add seconds/milliseconds to the URL
+    my $cutoff_date = DateTime->new(year=> 2018, month => 06, day => 01);
+    if (DateTime->compare($cutoff_date,$dt) <= 0) {
+        $secs = $d->{startSeconds};
+        $secs =~ s/\.//g;
+        $secs =~ /(.)(.)(.)(.)(.)/;
+        # We scramble them as follows: abCDE => bECaD
+        $secs = "-$2$5$3$1$4";
+    }
+    $d->{url} = 'http://cyclemeter.com/' .$d->{appInstanceID}  . '/'. $activity->{$d->{activityID}} . '-' . $dt->strftime("%Y%m%d-%H%M" . "$secs");
     $d->{appInstanceID} =~ /(....)(....)(....)(....)/;
-    $d->{kmlUrl} = 'http://share.abvio.com/' . "$1/$2/$3/$4/Cyclemeter-" . $activity->{$d->{activityID}} . '-' . $dt->strftime("%Y%m%d-%H%M") . ".kml";
+    $d->{kmlUrl} = 'http://share.abvio.com/' . "$1/$2/$3/$4/Cyclemeter-" . $activity->{$d->{activityID}} . '-' . $dt->strftime("%Y%m%d-%H%M") . "$secs.kml";
     $d->{date} = $date;
     $d->{startTime} = $dt->strftime("%Y-%m-%d %T");
     $d->{activity} = $activity->{$d->{activityID}};
-# http://share.abvio.com/86f6/412c/0cdd/4565/Cyclemeter-Hike-20170506-1005.kml
     push @result , $d;
 }
 $dbh->disconnect;

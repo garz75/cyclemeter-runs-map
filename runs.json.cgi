@@ -15,6 +15,7 @@ my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","");
 
 my $statement = << "EOF"; 
 select
+    run.runID,
     latitude,
     longitude,
     appinstanceid,
@@ -39,7 +40,9 @@ from
     run,meter,coordinate
 where
 -- make sure we actually did some something
-    runtime > 0  
+    runtime > 0 
+-- make sure it is not a path (it looks like there is an importDict when it is a path...)
+    and importDict = ''
 -- Join with the coordinate table to get the start point
     and coordinate.runID = run.runID
 -- Make sure we are at the first point...

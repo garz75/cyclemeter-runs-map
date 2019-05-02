@@ -54,13 +54,15 @@ my $activity = {
     3 => "Hike",
     4 => "Cycle",
     6 => "DownhillSki",
-    10 => "Car"
+    10 => "Car",
+    2 => "Walk" 
 };
 
 
 while (my $d = $sth->fetchrow_hashref) {
-    # For some reason, DateTime does not understand this TZ, so work around it
+    # For some reason, DateTime does not understand these TZ, so work around it
     $d->{startTimeZone} = 'Europe/Paris' if $d->{startTimeZone} eq "Etc/GMT-2";
+    $d->{startTimeZone} = 'Europe/Paris' if $d->{startTimeZone} eq "GMT+0200";    
     my $dt = DateTime->from_epoch( epoch => $d->{startTime} , time_zone  => $d->{startTimeZone} );
     my $date = $dt->strftime("%Y-%m-%d");
     my $secs = "" ;
@@ -78,7 +80,7 @@ while (my $d = $sth->fetchrow_hashref) {
     $d->{kmlUrl} = 'http://share.abvio.com/' . "$1/$2/$3/$4/Cyclemeter-" . $activity->{$d->{activityID}} . '-' . $dt->strftime("%Y%m%d-%H%M") . "$secs.kml";
     $d->{date} = $date;
     $d->{startTime} = $dt->strftime("%Y-%m-%d %T");
-    $d->{activity} = $activity->{$d->{activityID}};
+    $d->{activity} = $activity->{$d->{activityID}} || $d->{activityID};
     push @result , $d;
 }
 $dbh->disconnect;

@@ -83,7 +83,7 @@
 		    if (obj == null) {
 			div.style.display= "none";
 		    } else {
-			let iterable = ["activity", "startTime", "runTime", "stoppedTime", "distance","calories","ascent","descent","avgSpeed","maxSpeed", "avgHeartRate", "maxHeartRate", "stepsPM", "steps", "maxStepsPM"];
+			let iterable = ["activity", "startTime", "runTime", "stoppedTime", "distance","calories","ascent","descent","avgSpeed","maxSpeed", "avgHeartRate", "maxHeartRate", "stepsPM", "steps", "maxStepsPM", "runID"];
 
 			for (let value of iterable) {
 			    document.getElementById(value).innerHTML=obj[value];

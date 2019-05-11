@@ -24,7 +24,8 @@
 	<div id="loading">
 	  <img src="img/loading.gif">
 	</div>   
-	<a onClick="map.fitBounds(bound);" href="#">Reset zoom</a><br/>
+	<a onClick="map.fitBounds(bound);" href="#">Reset zoom</a> | 
+	<a onClick="history.back();" href="#">Zoom out</a><br/>
 	Zoom and click on the markers to display more info on the workout
 	<div id="activityDetails">
 	  <table>
@@ -106,13 +107,14 @@
 	  Made with <a href="https://github.com/garz75/cyclemeter-runs-map" target="_blank">Cyclemeter Runs Map by Garz75</a>
 	</div>
       </div>
-      <script language="javascript" type="text/javascript" src="code.js"></script>
       <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
-      </script>      <script async defer
+      </script>      
+      <script async defer
 	      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClD6LibYmhb33Mc6bbA2Vq8xamo9hxmWU&callback=initMap">
 	var map = null;
 	var bound = null; 
       </script>
+      <script language="javascript" type="text/javascript" src="code.js"></script>
   </body>
 </html>
 

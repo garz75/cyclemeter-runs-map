@@ -99,7 +99,10 @@ function initMap() {
 			rememberMapBoundsInHistory(map,"marker");
 
 		    } else {
+			// clicks again on the same marker
+			// Hiding the current Marker's runLayer if present
 			if (runLayer != null) {
+			    console.log("hiding my runLayer");
 			    hideRunLayer(runLayer);
 			} else {
 			    updateInfo(myObj);
@@ -112,7 +115,6 @@ function initMap() {
 			    );
 			}
 		    }
-
 		};
 	    }
 	    markers.push(marker);
@@ -136,14 +138,15 @@ function initMap() {
 	document.getElementById("loading").style.display = "none";
 	rememberMapBoundsInHistory(map,"map");
     }
+    var hideRunLayer = function(){
+	if (runLayer != null) {
+	    runLayer.setMap(null);
+	    runLayer = null;
+	    updateInfo(null);
+	}
+    };
+
 }
-var hideRunLayer = function(runLayer){
-    if (runLayer != null) {
-	runLayer.setMap(null);
-	runLayer = null;
-	updateInfo(null);
-    }
-};
 var updateInfo = function(obj){
     var div = document.getElementById('activityDetails');
     var geocoder = new google.maps.Geocoder;

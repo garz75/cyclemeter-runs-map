@@ -26,6 +26,14 @@ function initMap() {
         zoom: 3,
         center: {lat: 44.397515,  lng: -52.857104  }
     });
+    map.addListener("idle",
+		   function() {
+		       rememberMapBoundsInHistory(map,"idle");
+		   });
+    // map.addListener("zoom_changed",
+    // 		   function() {
+    // 		       rememberMapBoundsInHistory(map,"zoom_changed");
+    // 		   });
     var runLayer = null;
     window.onpopstate = function(event) {
 	// Tthis function fires everytime the browser history goes
@@ -47,7 +55,7 @@ function initMap() {
 	}   
     }
 
-    getJSON('http://server.garzon.fr/maps/runs.json.cgi', 
+    getJSON('https://server.garzon.fr/maps/runs.json.cgi', 
 	    function(data) {
 		loadData(data);
 	    },

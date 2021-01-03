@@ -10,7 +10,7 @@ our $q = new CGI;
 print $q->header(-type => "application/json");
 
 
-my $dbfile = "/home/garzon/Meter.db";
+my $dbfile = "/home/fgarzon/Meter.db";
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","");
 
 my $statement = << "EOF"; 

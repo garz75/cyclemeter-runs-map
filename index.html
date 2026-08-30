@@ -6,13 +6,13 @@
     <title>Hikes and Rides</title>
     <!-- Google Fonts -->
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
-    
+
     <!-- CSS Reset -->
     <link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css">
 
     <!-- Milligram CSS minified -->
     <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
-    
+
     <link rel="stylesheet" href="style.css">
     </head>
   <body>
@@ -23,8 +23,8 @@
 	<h3>Cyclemeter  Hikes and Rides</h3>
 	<div id="loading">
 	  <img src="img/loading.gif">
-	</div>   
-	<a onClick="map.fitBounds(bound);" href="#">Reset zoom</a> | 
+	</div>
+	<a onClick="map.fitBounds(bound);" href="#">Reset zoom</a> |
 	<a onClick="history.back();" href="#">Zoom out</a><br/>
 	Zoom and click on the markers to display more info on the workout
 	<div id="activityDetails">
@@ -107,14 +107,12 @@
 	  Made with <a href="https://github.com/garz75/cyclemeter-runs-map" target="_blank">Cyclemeter Runs Map by Garz75</a>
 	</div>
       </div>
-      <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
-      </script>      
-      <script async defer
-	      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClD6LibYmhb33Mc6bbA2Vq8xamo9hxmWU&callback=initMap">
+      <script defer
+	      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClD6LibYmhb33Mc6bbA2Vq8xamo9hxmWU&loading=async">
 	var map = null;
-	var bound = null; 
+	var bound = null;
       </script>
-      <script language="javascript" type="text/javascript" src="code.js"></script>
+      <script defer src="https://unpkg.com/@googlemaps/markerclusterer@2.5.0/dist/index.umd.js"></script>
+      <script defer language="javascript" type="text/javascript" src="code.js"></script>
   </body>
 </html>
-

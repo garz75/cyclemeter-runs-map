@@ -7,7 +7,7 @@ var getJSON = function(url, successHandler, errorHandler) {
     xhr.onreadystatechange = function() {
 	var status;
 	var data;
-	if (xhr.readyState == 4) { 
+	if (xhr.readyState == 4) {
 	    status = xhr.status;
 	    if (status == 200) {
 		successHandler && successHandler(xhr.response);
@@ -18,6 +18,23 @@ var getJSON = function(url, successHandler, errorHandler) {
     };
     xhr.send();
 };
+
+// Ensure libraries are loaded before initializing map
+function waitForMapsAPI() {
+    if (typeof google !== 'undefined' &&
+        typeof google.maps !== 'undefined' &&
+        typeof google.maps.LatLngBounds === 'function') {
+        initMap();
+    } else {
+        setTimeout(waitForMapsAPI, 500);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', waitForMapsAPI);
+} else {
+    waitForMapsAPI();
+}
 
 function initMap() {
     document.getElementById("loading").style.display = "inline";
@@ -47,15 +64,15 @@ function initMap() {
 	var state = event.state;
 	console.log("onpop ");
 	console.log(state);
-	
+
 	if (state != null && state.bounds !=null) {
 	    hideRunLayer(runLayer);
 	    console.log("resetting bounds");
 	    map.fitBounds(state.bounds);
-	}   
+	}
     }
 
-    getJSON('https://server.garzon.fr/maps/runs.json.cgi', 
+    getJSON('https://server.garzon.fr/maps/runs.json.cgi',
 	    function(data) {
 		loadData(data);
 	    },
@@ -78,7 +95,7 @@ function initMap() {
 	    var title = data[i].activity + ', on ' + data[i].date + ': '+ data[i].distance + ' km';
 	    var marker = new google.maps.Marker(
 		{
-		    position: { lat:data[i].latitude, lng:data[i].longitude}, 
+		    position: { lat:data[i].latitude, lng:data[i].longitude},
 		    map: map,
 		    title: title,
 		    icon: activityIcons[data[i].activityID]
@@ -95,7 +112,7 @@ function initMap() {
 			hideRunLayer(runLayer);
 			updateInfo(myObj);
 			var date = (new Date()).getTime();
-			var k = myObj.kmlUrl + '?' + date ; 
+			var k = myObj.kmlUrl + '?' + date ;
 			runLayer = new google.maps.KmlLayer(
 			    {
 				url: k,
@@ -103,7 +120,7 @@ function initMap() {
 				preserveViewport:  false
 			    }
 			);
-			// Remember the current map position in the history 
+			// Remember the current map position in the history
 			rememberMapBoundsInHistory(map,"marker");
 
 		    } else {
@@ -129,22 +146,32 @@ function initMap() {
 	}
 	map.fitBounds(bound);
 	// Add a marker clusterer to manage the markers.
-        var markerClusterer = new MarkerClusterer(map, markers,
-						  {   zoomOnClick: false, // We zoom ourselves in the clusterclick event
-						      imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-						      maxZoom: 12
-						  });
-	google.maps.event.addListener(markerClusterer, 'clusterclick', function(cluster){
-	    // We do the zoom ourselves to make sure we remember
-	    // the mapBound in history AFTER it has been applied
-	    // (the clusterclick event is fired BEFORE the zoom is
-	    // done by Markerclusterer...)
-	    map.setCenter(cluster.getCenter());
-	    map.fitBounds(cluster.getBounds());
-	    rememberMapBoundsInHistory(map, "clusterer")
-	});
-	document.getElementById("loading").style.display = "none";
-	rememberMapBoundsInHistory(map,"map");
+	// Wait for MarkerClusterer to be available
+	function initMarkerClusterer() {
+	    // Try different possible global locations
+	    var MC = window.MarkerClusterer || (window.markerClusterer && window.markerClusterer.MarkerClusterer) || window.googlemaps?.markerclusterer?.MarkerClusterer;
+	    if (!MC) {
+		setTimeout(initMarkerClusterer, 100);
+		return;
+	    }
+	    var markerClusterer = new MC({
+		map: map,
+		markers: markers,
+		zoomOnClick: false
+	    });
+	    markerClusterer.addListener('clusterclick', function(cluster){
+		// We do the zoom ourselves to make sure we remember
+		// the mapBound in history AFTER it has been applied
+		// (the clusterclick event is fired BEFORE the zoom is
+		// done by Markerclusterer...)
+		map.setCenter(cluster.getCenter());
+		map.fitBounds(cluster.getBounds());
+		rememberMapBoundsInHistory(map, "clusterer")
+	    });
+	    document.getElementById("loading").style.display = "none";
+	    rememberMapBoundsInHistory(map,"map");
+	}
+	initMarkerClusterer();
     }
     var hideRunLayer = function(){
 	if (runLayer != null) {
@@ -162,12 +189,12 @@ var updateInfo = function(obj){
 	div.style.display= "none";
     } else {
 	let iterable = ["activity", "startTime", "runTime", "stoppedTime", "distance","calories","ascent","descent","avgSpeed","maxSpeed", "avgHeartRate", "maxHeartRate", "stepsPM", "steps", "maxStepsPM", "runID"];
-	
+
 	for (let value of iterable) {
 	    document.getElementById(value).innerHTML=obj[value];
 	}
 	let urls = ["url","kmlUrl"];
-	
+
 	for (let u of urls) {
 	    document.getElementById(u).setAttribute('href', obj[u]);
 	}
@@ -193,4 +220,3 @@ var rememberMapBoundsInHistory = function(map, level) {
     console.log(stateObj);
     history.pushState(stateObj, "", "")
 };
-

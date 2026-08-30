@@ -13,7 +13,7 @@ print $q->header(-type => "application/json");
 my $dbfile = "/home/fgarzon/Meter.db";
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","");
 
-my $statement = << "EOF"; 
+my $statement = << "EOF";
 select
     run.runID,
     latitude,
@@ -40,8 +40,8 @@ from
     run,meter,coordinate
 where
 -- make sure we actually did some something
-    runtime > 0 
--- make sure it is not a path 
+    runtime > 0
+-- make sure it is not a path
     and routeID != -2
 -- Join with the coordinate table to get the start point
     and coordinate.runID = run.runID
@@ -58,14 +58,14 @@ my $activity = {
     4 => "Cycle",
     6 => "DownhillSki",
     10 => "Car",
-    2 => "Walk" 
+    2 => "Walk"
 };
 
 
 while (my $d = $sth->fetchrow_hashref) {
     # For some reason, DateTime does not understand these TZ, so work around it
     $d->{startTimeZone} = 'Europe/Paris' if $d->{startTimeZone} eq "Etc/GMT-2";
-    $d->{startTimeZone} = 'Europe/Paris' if $d->{startTimeZone} eq "GMT+0200";    
+    $d->{startTimeZone} = 'Europe/Paris' if $d->{startTimeZone} eq "GMT+0200";
     my $dt = DateTime->from_epoch( epoch => $d->{startTime} , time_zone  => $d->{startTimeZone} );
     my $date = $dt->strftime("%Y-%m-%d");
     my $secs = "" ;

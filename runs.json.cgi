@@ -53,12 +53,39 @@ my $sth = $dbh->prepare($statement);
 $sth->execute();
 
 my @result;
+
+# NOTE: when using new activity types with Cyclemeter, make sure to update both $activity and
+# $url_fname mappings accordingly, and icon url in code.js. May be we should fail if an unknown
+# activityID is encountered... For the time being, we just use the activityID itself as a fallback,
+# and in code.js we do not provide a specific icon for it, which results in a generic icon being
+# used, and clicking on it will not show the path of the activity.
 my $activity = {
     3 => "Hike",
     4 => "Cycle",
     6 => "DownhillSki",
+    5 => "Swim",
     10 => "Car",
-    2 => "Walk"
+    12 => "Row",
+    2 => "Walk",
+    10007 => "Walk for distance", # Walk for distance
+    10008 => "Walk for time", # Walk for time
+    257 => "E-bike",
+    10004 => "Cycle for time" #
+};
+
+# Mapping of activity IDs to URL: special walk/bike types keep the URL generic name
+my $url_fname = {
+    3 => "Hike",
+    4 => "Cycle",
+    6 => "DownhillSki",
+    5 => "Swim",
+    10 => "Car",
+    12 => "Row",
+    2 => "Walk",
+    10007 => "Walk", # Walk for distance
+    10008 => "Walk", # Walk for time
+    257 => "Cycle", # E-bike is treated as a Cycle for URL purposes
+    10004 => "Cycle" # Cycle for time
 };
 
 
@@ -78,9 +105,9 @@ while (my $d = $sth->fetchrow_hashref) {
         # We scramble them as follows: abCDE => bECaD
         $secs = "-$2$5$3$1$4";
     }
-    $d->{url} = 'http://cyclemeter.com/' .$d->{appInstanceID}  . '/'. $activity->{$d->{activityID}} . '-' . $dt->strftime("%Y%m%d-%H%M" . "$secs");
+    $d->{url} = 'http://cyclemeter.com/' .$d->{appInstanceID}  . '/'. $url_fname->{$d->{activityID}} . '-' . $dt->strftime("%Y%m%d-%H%M" . "$secs");
     $d->{appInstanceID} =~ /(....)(....)(....)(....)/;
-    $d->{kmlUrl} = 'http://share.abvio.com/' . "$1/$2/$3/$4/Cyclemeter-" . $activity->{$d->{activityID}} . '-' . $dt->strftime("%Y%m%d-%H%M") . "$secs.kml";
+    $d->{kmlUrl} = 'http://share.abvio.com/' . "$1/$2/$3/$4/Cyclemeter-" . $url_fname->{$d->{activityID}} . '-' . $dt->strftime("%Y%m%d-%H%M") . "$secs.kml";
     $d->{date} = $date;
     $d->{startTime} = $dt->strftime("%Y-%m-%d %T");
     $d->{activity} = $activity->{$d->{activityID}} || $d->{activityID};

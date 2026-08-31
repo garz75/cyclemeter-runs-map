@@ -7,7 +7,7 @@ use DateTime;
 use DBI;
 
 our $q = new CGI;
-print $q->header(-type => "application/json");
+print $q->header(-type => "application/json", -cache => 'public, max-age=3600');
 
 
 my $dbfile = "/home/fgarzon/Meter.db";

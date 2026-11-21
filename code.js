@@ -52,6 +52,7 @@ function initMap() {
   // 		       rememberMapBoundsInHistory(map,"zoom_changed");
   // 		   });
   var runLayer = null;
+  var runLayerRequest = 0;
   window.onpopstate = function (event) {
     // Tthis function fires everytime the browser history goes
     // back (back button, Zoom out button...): we previously added
@@ -115,17 +116,9 @@ function initMap() {
           console.log(myObj);
           if (currentMarker != myMarker) {
             currentMarker = myMarker;
-            hideRunLayer(runLayer);
+            hideRunLayer();
             updateInfo(myObj);
-            var date = (new Date()).getTime();
-            var k = myObj.kmlUrl + '?' + date;
-            runLayer = new google.maps.KmlLayer(
-              {
-                url: k,
-                map: map,
-                preserveViewport: false
-              }
-            );
+            showRunLayer(myObj.kmlUrl);
             // Remember the current map position in the history
             rememberMapBoundsInHistory(map, "marker");
 
@@ -134,16 +127,10 @@ function initMap() {
             // Hiding the current Marker's runLayer if present
             if (runLayer != null) {
               console.log("hiding my runLayer");
-              hideRunLayer(runLayer);
+              hideRunLayer();
             } else {
               updateInfo(myObj);
-              runLayer = new google.maps.KmlLayer(
-                {
-                  url: myObj.kmlUrl,
-                  map: map,
-                  preserveViewport: false
-                }
-              );
+              showRunLayer(myObj.kmlUrl);
             }
           }
         };
@@ -179,7 +166,47 @@ function initMap() {
     }
     initMarkerClusterer();
   }
+  var showRunLayer = function (url) {
+    var request = ++runLayerRequest;
+    var layerUrl = 'runs.json.cgi?url=' + encodeURIComponent(url) +
+      '&_=' + (new Date()).getTime();
+
+    fetch(layerUrl)
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error('Unable to load route (' + response.status + ')');
+        }
+        return response.text();
+      })
+      .then(function (kml) {
+        if (request != runLayerRequest) {
+          return;
+        }
+
+        var geoJson = kmlToGeoJSON(kml);
+        runLayer = new google.maps.Data({ map: map });
+        runLayer.setStyle(runLayerStyle);
+        runLayer.addGeoJson(geoJson);
+
+        var routeBounds = new google.maps.LatLngBounds();
+        runLayer.forEach(function (feature) {
+          feature.getGeometry().forEachLatLng(function (latLng) {
+            routeBounds.extend(latLng);
+          });
+        });
+        if (!routeBounds.isEmpty()) {
+          map.fitBounds(routeBounds);
+        }
+      })
+      .catch(function (error) {
+        if (request == runLayerRequest) {
+          console.error(error);
+          alert('Erreur loading route: ' + error.message);
+        }
+      });
+  };
   var hideRunLayer = function () {
+    runLayerRequest++;
     if (runLayer != null) {
       runLayer.setMap(null);
       runLayer = null;
@@ -188,6 +215,121 @@ function initMap() {
   };
 
 }
+function kmlToGeoJSON(kml) {
+  var documentNode = new DOMParser().parseFromString(kml, 'application/xml');
+  if (documentNode.getElementsByTagName('parsererror').length) {
+    throw new Error('The KML file is invalid');
+  }
+
+  var styles = {};
+  var styleNodes = documentNode.getElementsByTagName('Style');
+  for (var i = 0; i < styleNodes.length; i++) {
+    var styleNode = styleNodes[i];
+    var styleId = styleNode.getAttribute('id');
+    var lineNode = styleNode.getElementsByTagName('LineStyle')[0];
+    var iconNode = styleNode.getElementsByTagName('Icon')[0];
+
+    styles['#' + styleId] = {
+      lineColor: lineNode ? kmlColor(lineNode) : null,
+      lineWidth: lineNode ? parseFloat(textOf(lineNode, 'width')) || 3 : 3,
+      icon: iconNode ? textOf(iconNode, 'href').replace(/^http:/, 'https:') : null
+    };
+  }
+
+  var features = [];
+  var placemarks = documentNode.getElementsByTagName('Placemark');
+  for (var j = 0; j < placemarks.length; j++) {
+    var placemark = placemarks[j];
+    var style = styles[textOf(placemark, 'styleUrl')] || {};
+    var properties = {
+      name: textOf(placemark, 'name'),
+      strokeColor: style.lineColor ? style.lineColor.color : '#1976d2',
+      strokeOpacity: style.lineColor ? style.lineColor.opacity : 1,
+      strokeWeight: style.lineWidth || 3,
+      icon: style.icon
+    };
+    var lineStrings = placemark.getElementsByTagName('LineString');
+    var points = placemark.getElementsByTagName('Point');
+
+    for (var k = 0; k < lineStrings.length; k++) {
+      var lineCoordinates = parseKmlCoordinates(textOf(lineStrings[k], 'coordinates'));
+      if (lineCoordinates.length > 1) {
+        features.push(geoJsonFeature('LineString', lineCoordinates, properties));
+      }
+    }
+    for (var p = 0; p < points.length; p++) {
+      var pointCoordinates = parseKmlCoordinates(textOf(points[p], 'coordinates'));
+      if (pointCoordinates.length) {
+        features.push(geoJsonFeature('Point', pointCoordinates[0], properties));
+      }
+    }
+  }
+
+  if (!features.length) {
+    throw new Error('The KML file contains no route geometry');
+  }
+  return { type: 'FeatureCollection', features: features };
+}
+
+function runLayerStyle(feature) {
+  if (feature.getGeometry().getType() == 'Point') {
+    var icon = feature.getProperty('icon');
+    return {
+      icon: icon || {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#1976d2',
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 1,
+        scale: 5
+      }
+    };
+  }
+  return {
+    strokeColor: feature.getProperty('strokeColor'),
+    strokeOpacity: feature.getProperty('strokeOpacity'),
+    strokeWeight: feature.getProperty('strokeWeight')
+  };
+}
+
+function kmlColor(node) {
+  var color = textOf(node, 'color');
+  if (!/^[0-9a-f]{8}$/i.test(color)) {
+    return null;
+  }
+  return {
+    color: '#' + color.slice(6, 8) + color.slice(4, 6) + color.slice(2, 4),
+    opacity: parseInt(color.slice(0, 2), 16) / 255
+  };
+}
+
+function parseKmlCoordinates(value) {
+  var coordinates = [];
+  var tuples = value.trim().split(/\s+/);
+  for (var i = 0; i < tuples.length; i++) {
+    var values = tuples[i].split(',');
+    var longitude = parseFloat(values[0]);
+    var latitude = parseFloat(values[1]);
+    if (Number.isFinite(longitude) && Number.isFinite(latitude)) {
+      coordinates.push([longitude, latitude]);
+    }
+  }
+  return coordinates;
+}
+
+function textOf(node, tagName) {
+  var child = node && node.getElementsByTagName(tagName)[0];
+  return child ? child.textContent.trim() : '';
+}
+
+function geoJsonFeature(type, coordinates, properties) {
+  return {
+    type: 'Feature',
+    properties: properties,
+    geometry: { type: type, coordinates: coordinates }
+  };
+}
+
 var updateInfo = function (obj) {
   var div = document.getElementById('activityDetails');
   var geocoder = new google.maps.Geocoder;

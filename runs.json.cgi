@@ -2,11 +2,44 @@
 
 use strict;
 use CGI;
+use HTTP::Tiny;
 use JSON::XS;
 use DateTime;
 use DBI;
 
 our $q = new CGI;
+my $kml_url = $q->param('url');
+
+if (defined $kml_url) {
+    # Restrict proxying to the KML provider generated below. This prevents
+    # the endpoint from becoming a general-purpose SSRF proxy.
+    if ($kml_url !~ m{\Ahttps?://share[.]abvio[.]com/[A-Za-z0-9/_-]+[.]kml(?:[?][A-Za-z0-9._=&%-]*)?\z}) {
+        print $q->header(-status => '400 Bad Request', -type => 'text/plain');
+        print "Invalid KML URL\n";
+        exit;
+    }
+
+    $kml_url =~ s{\Ahttp:}{https:};
+    my $response = HTTP::Tiny->new(
+        agent => 'cyclemeter-runs-map/1.0',
+        timeout => 15,
+        max_redirect => 0
+    )->get($kml_url);
+
+    if (!$response->{success}) {
+        print $q->header(-status => '502 Bad Gateway', -type => 'text/plain');
+        print "Unable to retrieve KML: $response->{status}\n";
+        exit;
+    }
+
+    print $q->header(
+        -type => 'application/vnd.google-earth.kml+xml; charset=UTF-8',
+        -cache_control => 'public, max-age=3600'
+    );
+    print $response->{content};
+    exit;
+}
+
 print $q->header(-type => "application/json", -cache => 'public, max-age=3600');
 
 

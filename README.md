@@ -14,13 +14,15 @@ The CycleMeter DB file (Meter.db) needs to be uploaded from the iPhone to the we
 ## Requirement / Dependencies
  
  1. A web server to host the static pages, the CGI script (perl), and the CycleMeter sqlite3 db.
- 1. You will need a [Google Maps JS API key](https://developers.google.com/maps/documentation/javascript/get-api-key#key-restrictions)
+ 1. You will need a [Google Maps JavaScript API key](https://developers.google.com/maps/documentation/javascript/get-api-key#key-restrictions). Create it in a Google Cloud project with billing enabled, then enable both the **Maps JavaScript API** and **Geocoding API**. Restrict the key to the Maps JavaScript and Geocoding APIs and to your site's HTTP referrers.
+ 1. Advanced markers require a [Google Maps Map ID](https://developers.google.com/maps/documentation/get-map-id). Use your own JavaScript Map ID for production instead of `DEMO_MAP_ID`.
  1. Perl dependencies on the server: CGI, JSON::XS, DateTime, DBI, DBD::SQLite. `HTTP::Tiny` is used to proxy KML requests and is included in modern Perl distributions.
  
 ## How to use it:
  1. Drop the files in a web accessible directory
  1. Upload the CycleMeter Meter.db file to your server: It should be in a non web-accessible directory on the server.
- 1. Edit index.html to set your Google API key (look for 'key=' near the bottome of the file)
+ 1. Edit `index.html` to set your Google Maps JavaScript API key (look for `key=` near the bottom of the file)
+ 1. Create a JavaScript Map ID in Google Maps Platform, then replace `DEMO_MAP_ID` in `code.js` with that ID
  1. Edit runs.json.cgi to set the path to the CycleMeter Meter.db file 
  1. Configure your web server to execute .cgi files as CGI: ex. Apache
      `AddHandler cgi-script .cgi`

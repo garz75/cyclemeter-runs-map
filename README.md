@@ -27,7 +27,7 @@ The CycleMeter DB file (Meter.db) needs to be uploaded from the iPhone to the we
  1. Configure your web server to execute `.cgi` files as CGI. For example, with Apache:
      `AddHandler cgi-script .cgi`
 
-`runs.json.cgi?config=1` exposes only the Maps API key and Map ID to the browser. Browser-visible Maps credentials must be protected with HTTP-referrer and API restrictions. The database path and any other server-only settings remain private.
+`controller.cgi?action=config` exposes only the Maps API key and Map ID to the browser. The `runs` action returns workout data, and the `kml` action proxies authorized KML files. Browser-visible Maps credentials must be protected with HTTP-referrer and API restrictions. The database path and any other server-only settings remain private.
      
  *Caveat*: Obviously, this web app will display personal details about your whereabouts, etc. Make sure to protect the web site with a password if you want some privacy...
      

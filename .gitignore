@@ -4,3 +4,4 @@ Meter.db
 *.php
 *.old
 config.pl
+.editorconfig

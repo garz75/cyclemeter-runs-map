@@ -25,7 +25,7 @@ var getJSON = function (url, successHandler, errorHandler) {
 
 function startApp() {
   document.getElementById("loading").style.display = "flex";
-  getJSON('runs.json.cgi?config=1',
+  getJSON('controller.cgi?action=config',
     function (config) {
       if (!config.apiKey || !config.mapId) {
         alert('The Google Maps configuration is incomplete.');
@@ -105,7 +105,7 @@ function initMap() {
     }
   }
 
-  getJSON('runs.json.cgi',
+  getJSON('controller.cgi?action=runs',
     function (data) {
       loadData(data);
     },
@@ -205,7 +205,7 @@ function initMap() {
     var loadingText = loading.querySelector(".loading-text");
     loadingText.textContent = "Loading workout track";
     loading.style.display = "flex";
-    var layerUrl = 'runs.json.cgi?url=' + encodeURIComponent(url) +
+    var layerUrl = 'controller.cgi?action=kml&url=' + encodeURIComponent(url) +
       '&_=' + (new Date()).getTime();
 
     fetch(layerUrl)

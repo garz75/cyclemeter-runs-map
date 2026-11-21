@@ -1,0 +1,6 @@
+<Files "config.pl">
+    Require all denied
+</Files>
+<Files "config.example.pl">
+    Require all denied
+</Files>

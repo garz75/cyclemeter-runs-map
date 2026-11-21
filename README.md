@@ -19,13 +19,15 @@ The CycleMeter DB file (Meter.db) needs to be uploaded from the iPhone to the we
  1. Perl dependencies on the server: CGI, JSON::XS, DateTime, DBI, DBD::SQLite. `HTTP::Tiny` is used to proxy KML requests and is included in modern Perl distributions.
  
 ## How to use it:
- 1. Drop the files in a web accessible directory
- 1. Upload the CycleMeter Meter.db file to your server: It should be in a non web-accessible directory on the server.
- 1. Edit `index.html` to set your Google Maps JavaScript API key (look for `key=` near the bottom of the file)
- 1. Create a JavaScript Map ID in Google Maps Platform, then replace `DEMO_MAP_ID` in `code.js` with that ID
- 1. Edit runs.json.cgi to set the path to the CycleMeter Meter.db file 
- 1. Configure your web server to execute .cgi files as CGI: ex. Apache
+ 1. Drop the files in a web accessible directory.
+ 1. Upload the CycleMeter Meter.db file to a non-web-accessible directory on the server.
+ 1. Copy `config.example.pl` to `config.pl`.
+ 1. Set `google_maps_api_key`, `google_maps_map_id`, and the absolute `cyclemeter_db_path` in `config.pl`.
+ 1. Keep `config.pl` private: it is ignored by Git and access to it is denied by the included `.htaccess`. On a non-Apache server, configure an equivalent deny rule.
+ 1. Configure your web server to execute `.cgi` files as CGI. For example, with Apache:
      `AddHandler cgi-script .cgi`
+
+`runs.json.cgi?config=1` exposes only the Maps API key and Map ID to the browser. Browser-visible Maps credentials must be protected with HTTP-referrer and API restrictions. The database path and any other server-only settings remain private.
      
  *Caveat*: Obviously, this web app will display personal details about your whereabouts, etc. Make sure to protect the web site with a password if you want some privacy...
      

@@ -6,8 +6,37 @@ use HTTP::Tiny;
 use JSON::XS;
 use DateTime;
 use DBI;
+use FindBin;
 
 our $q = new CGI;
+my $config_file = "$FindBin::Bin/config.pl";
+my $config = do $config_file;
+if (!defined $config || ref $config ne 'HASH') {
+    print $q->header(-status => '500 Internal Server Error', -type => 'text/plain');
+    print "Unable to load configuration\n";
+    exit;
+}
+
+for my $setting (qw(google_maps_api_key google_maps_map_id cyclemeter_db_path)) {
+    if (!defined $config->{$setting} || $config->{$setting} eq '') {
+        print $q->header(-status => '500 Internal Server Error', -type => 'text/plain');
+        print "Missing configuration setting: $setting\n";
+        exit;
+    }
+}
+
+if (defined $q->param('config')) {
+    print $q->header(
+        -type => 'application/json; charset=UTF-8',
+        -cache_control => 'public, max-age=3600'
+    );
+    print encode_json {
+        apiKey => $config->{google_maps_api_key},
+        mapId => $config->{google_maps_map_id}
+    };
+    exit;
+}
+
 my $kml_url = $q->param('url');
 
 if (defined $kml_url) {
@@ -43,7 +72,7 @@ if (defined $kml_url) {
 print $q->header(-type => "application/json", -cache => 'public, max-age=3600');
 
 
-my $dbfile = "/home/fgarzon/Meter.db";
+my $dbfile = $config->{cyclemeter_db_path};
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","");
 
 my $statement = << "EOF";

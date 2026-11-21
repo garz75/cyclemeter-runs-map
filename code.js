@@ -1,5 +1,6 @@
 var map = null;
 var bound = null;
+var appConfig = null;
 
 var getJSON = function (url, successHandler, errorHandler) {
   var xhr = typeof XMLHttpRequest != 'undefined'
@@ -22,7 +23,32 @@ var getJSON = function (url, successHandler, errorHandler) {
   xhr.send();
 };
 
-// Ensure libraries are loaded before initializing map
+function startApp() {
+  document.getElementById("loading").style.display = "flex";
+  getJSON('runs.json.cgi?config=1',
+    function (config) {
+      if (!config.apiKey || !config.mapId) {
+        alert('The Google Maps configuration is incomplete.');
+        return;
+      }
+
+      appConfig = config;
+      var mapsScript = document.createElement('script');
+      mapsScript.src = 'https://maps.googleapis.com/maps/api/js?key=' +
+        encodeURIComponent(config.apiKey) + '&loading=async&libraries=marker';
+      mapsScript.async = true;
+      mapsScript.onload = waitForMapsAPI;
+      mapsScript.onerror = function () {
+        alert('Unable to load the Google Maps API.');
+      };
+      document.head.appendChild(mapsScript);
+    },
+    function (status) {
+      alert('Erreur Loading Configuration ' + status);
+    }
+  );
+}
+
 function waitForMapsAPI() {
   if (typeof google !== 'undefined' &&
     typeof google.maps !== 'undefined' &&
@@ -36,9 +62,9 @@ function waitForMapsAPI() {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', waitForMapsAPI);
+  document.addEventListener('DOMContentLoaded', startApp);
 } else {
-  waitForMapsAPI();
+  startApp();
 }
 
 function initMap() {
@@ -47,7 +73,7 @@ function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
     zoom: 3,
     center: { lat: 44.397515, lng: -52.857104 },
-    mapId: 'DEMO_MAP_ID'
+    mapId: appConfig.mapId
   });
   map.addListener("idle",
     function () {
@@ -79,7 +105,7 @@ function initMap() {
     }
   }
 
-  getJSON('https://server.garzon.fr/maps/runs.json.cgi',
+  getJSON('runs.json.cgi',
     function (data) {
       loadData(data);
     },

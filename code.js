@@ -42,7 +42,7 @@ if (document.readyState === 'loading') {
 }
 
 function initMap() {
-  document.getElementById("loading").style.display = "inline";
+  document.getElementById("loading").style.display = "flex";
   bound = new google.maps.LatLngBounds();
   map = new google.maps.Map(document.getElementById('map'), {
     zoom: 3,

@@ -22,7 +22,8 @@
       <div class="col span_20">
 	<h3>Cyclemeter  Hikes and Rides</h3>
 	<div id="loading">
-	  <img src="img/loading.gif">
+	  <div class="loading-spinner" aria-hidden="true"></div>
+	  <div class="loading-text" role="status" aria-live="polite">Loading hikes and rides information</div>
 	</div>
 	<a onClick="map.fitBounds(bound);" href="#">Reset zoom</a> |
 	<a onClick="history.back();" href="#">Zoom out</a><br/>
@@ -110,6 +111,6 @@
       <script defer
 	      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClD6LibYmhb33Mc6bbA2Vq8xamo9hxmWU&loading=async&libraries=marker"></script>
       <script defer src="https://unpkg.com/@googlemaps/markerclusterer@2.5.0/dist/index.umd.js"></script>
-      <script defer language="javascript" type="text/javascript" src="code.js?v=20261121-0949"></script>
+      <script defer language="javascript" type="text/javascript" src="code.js?v=20261121-1002"></script>
   </body>
 </html>

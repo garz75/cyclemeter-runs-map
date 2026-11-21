@@ -1,3 +1,6 @@
+var map = null;
+var bound = null;
+
 var getJSON = function (url, successHandler, errorHandler) {
   var xhr = typeof XMLHttpRequest != 'undefined'
     ? new XMLHttpRequest()
@@ -23,7 +26,9 @@ var getJSON = function (url, successHandler, errorHandler) {
 function waitForMapsAPI() {
   if (typeof google !== 'undefined' &&
     typeof google.maps !== 'undefined' &&
-    typeof google.maps.LatLngBounds === 'function') {
+    typeof google.maps.LatLngBounds === 'function' &&
+    typeof google.maps.marker !== 'undefined' &&
+    typeof google.maps.marker.AdvancedMarkerElement === 'function') {
     initMap();
   } else {
     setTimeout(waitForMapsAPI, 500);
@@ -41,7 +46,8 @@ function initMap() {
   bound = new google.maps.LatLngBounds();
   map = new google.maps.Map(document.getElementById('map'), {
     zoom: 3,
-    center: { lat: 44.397515, lng: -52.857104 }
+    center: { lat: 44.397515, lng: -52.857104 },
+    mapId: 'DEMO_MAP_ID'
   });
   map.addListener("idle",
     function () {
@@ -100,15 +106,20 @@ function initMap() {
     for (var i = 0; i < data.length; i++) {
       //console.log(data[i]);
       var title = data[i].activity + ', on ' + data[i].date + ': ' + data[i].distance + ' km';
-      var marker = new google.maps.Marker(
-        {
-          position: { lat: data[i].latitude, lng: data[i].longitude },
-          map: map,
-          title: title,
-          icon: activityIcons[data[i].activityID]
-        });
-      bound.extend(marker.getPosition());
-      marker.addListener('click', createCallBack(data[i], marker));
+      var icon = document.createElement('img');
+      icon.src = activityIcons[data[i].activityID] || activityIcons[2];
+      icon.alt = data[i].activity;
+      icon.width = 32;
+      icon.height = 32;
+      var marker = new google.maps.marker.AdvancedMarkerElement({
+        position: { lat: data[i].latitude, lng: data[i].longitude },
+        map: map,
+        title: title,
+        content: icon,
+        gmpClickable: true
+      });
+      bound.extend(marker.position);
+      marker.addEventListener('gmp-click', createCallBack(data[i], marker));
       function createCallBack(theObj, theMarker) {
         var myObj = theObj;
         var myMarker = theMarker;
@@ -153,10 +164,6 @@ function initMap() {
         zoomOnClick: false
       });
       markerClusterer.addListener('clusterclick', function (cluster) {
-        // We do the zoom ourselves to make sure we remember
-        // the mapBound in history AFTER it has been applied
-        // (the clusterclick event is fired BEFORE the zoom is
-        // done by Markerclusterer...)
         map.setCenter(cluster.getCenter());
         map.fitBounds(cluster.getBounds());
         rememberMapBoundsInHistory(map, "clusterer")

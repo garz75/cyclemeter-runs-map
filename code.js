@@ -175,6 +175,10 @@ function initMap() {
   }
   var showRunLayer = function (url) {
     var request = ++runLayerRequest;
+    var loading = document.getElementById("loading");
+    var loadingText = loading.querySelector(".loading-text");
+    loadingText.textContent = "Loading workout track";
+    loading.style.display = "flex";
     var layerUrl = 'runs.json.cgi?url=' + encodeURIComponent(url) +
       '&_=' + (new Date()).getTime();
 
@@ -204,16 +208,24 @@ function initMap() {
         if (!routeBounds.isEmpty()) {
           map.fitBounds(routeBounds);
         }
+        loading.style.display = "none";
+        loadingText.textContent = "Loading hikes and rides information";
       })
       .catch(function (error) {
         if (request == runLayerRequest) {
           console.error(error);
           alert('Erreur loading route: ' + error.message);
+          loading.style.display = "none";
+          loadingText.textContent = "Loading hikes and rides information";
         }
       });
   };
   var hideRunLayer = function () {
     runLayerRequest++;
+    var loading = document.getElementById("loading");
+    loading.style.display = "none";
+    loading.querySelector(".loading-text").textContent =
+      "Loading hikes and rides information";
     if (runLayer != null) {
       runLayer.setMap(null);
       runLayer = null;

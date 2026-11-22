@@ -13,102 +13,116 @@
     <!-- Milligram CSS minified -->
     <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20261122-1826">
     </head>
   <body>
-    <div class="section group">
-      <div id="map" class="col span_80">
+    <div class="app-layout">
+      <div class="map-panel">
+        <div id="map"></div>
+        <div class="map-controls">
+          <a href="#" id="resetZoomLink">Reset zoom</a>
+          <span>|</span>
+          <a href="#" id="zoomOutLink">Zoom out</a>
+        </div>
       </div>
-      <div class="col span_20">
-	<h3>Cyclemeter  Hikes and Rides</h3>
-	<div id="loading">
-	  <div class="loading-spinner" aria-hidden="true"></div>
-	  <div class="loading-text" role="status" aria-live="polite">Loading hikes and rides information</div>
-	</div>
-	<a onClick="map.fitBounds(bound);" href="#">Reset zoom</a> |
-	<a onClick="history.back();" href="#">Zoom out</a><br/>
-	Zoom and click on the markers to display more info on the workout
-	<div id="activityDetails">
-	  <table>
-	    <thead>
-	      <tr>
-		<th>Activity</th>
-		<th id="activity">Hike</th>
-	      </tr>
-	    </thead>
-	    <tbody>
-	      <tr>
-		<td>Starting Date</td>
-		<td id="startTime"></td>
-	      </tr>
-	      <tr>
-		<td>Location</td>
-		<td id="address"></td>
-	      </tr>
-	      <tr>
-		<td>Activity Duration</td>
-		<td id="runTime">02:10:24</td>
-	      </tr>
-	      <tr>
-		<td>Distance (km)</td>
-		<td id="distance">25.1</td>
-	      </tr>
-	      <tr>
-		<td>Stopped Time</td>
-		<td id="stoppedTime">00:50:54</td>
-	      </tr>
-	      <tr>
-		<td>Average Speed (km/h)</td>
-		<td id="avgSpeed">25.1</td>
-	      </tr>
-	      <tr>
-		<td>Maximum Speed (km/h)</td>
-		<td id="maxSpeed">25.1</td>
-	      </tr>
-	      <tr>
-		<td>Ascent</td>
-		<td id="ascent">00:50:54</td>
-	      </tr>
-	      <tr>
-		<td>Descent</td>
-		<td id="descent">00:50:54</td>
-	      </tr>
-	      <tr>
-		<td>Calories</td>
-		<td id="calories">00:50:54</td>
-	      </tr>
-	      <tr>
-		<td>Average Heart Rate</td>
-		<td id="avgHeartRate">00:50:54</td>
-	      </tr>
-	      <tr>
-		<td>Max. Heart Rate</td>
-		<td id="maxHeartRate">00:50:54</td>
-	      </tr>
-	      <tr id="stepsLine">
-		<td>Steps</td>
-		<td id="steps">00:50:54</td>
-	      </tr>
-	      <tr id="stepsPMLine">
-		<td>Cadence (avg/max in steps/min)</td>
-		<td><span id="stepsPM">121</span>/<span id="maxStepsPM">121</span></td>
-	      </tr>
-	      <tr id="runIDLine">
-		<td>Run ID</td>
-		<td><span id="runID">121</span></td>
-	      </tr>
-	      <tr>
-		<td><a href="#" target="_blank" id="url">More details</a> </td>
-		<td><a href="#"  id="kmlUrl">KML file</a> </td>
-	      </tr>
-	    </tbody>
-	  </table>
-	</div>
-	<div id="credits">
-	  Made with <a href="https://github.com/garz75/cyclemeter-runs-map" target="_blank">Cyclemeter Runs Map by Garz75</a>
-	</div>
+      <div id="panelDivider" class="panel-divider" role="separator" tabindex="0" aria-label="Resize workout details panel" aria-orientation="vertical" aria-valuemin="280" aria-valuemax="700" aria-valuenow="384"></div>
+      <aside id="detailsPanel" class="details-panel is-collapsed">
+        <div id="bottomSheetHandle" class="bottom-sheet-handle" role="separator" tabindex="0" aria-label="Collapse workout details">
+          <span class="bottom-sheet-handle-pill" aria-hidden="true"></span>
+        </div>
+        <div class="details-header">
+          <h3>Cyclemeter Hikes and Rides</h3>
+          <button id="detailsToggle" type="button" class="details-toggle" aria-expanded="false" aria-controls="activityDetails">
+            Details
+          </button>
+        </div>
+        <p class="details-help">Zoom and click on markers to display workout details.</p>
+        <div id="activityDetails">
+          <table>
+            <thead>
+              <tr>
+                <th>Activity</th>
+                <th id="activity">Hike</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Starting Date</td>
+                <td id="startTime"></td>
+              </tr>
+              <tr>
+                <td>Location</td>
+                <td id="address"></td>
+              </tr>
+              <tr>
+                <td>Activity Duration</td>
+                <td id="runTime">02:10:24</td>
+              </tr>
+              <tr>
+                <td>Distance (km)</td>
+                <td id="distance">25.1</td>
+              </tr>
+              <tr>
+                <td>Stopped Time</td>
+                <td id="stoppedTime">00:50:54</td>
+              </tr>
+              <tr>
+                <td>Average Speed (km/h)</td>
+                <td id="avgSpeed">25.1</td>
+              </tr>
+              <tr>
+                <td>Maximum Speed (km/h)</td>
+                <td id="maxSpeed">25.1</td>
+              </tr>
+              <tr>
+                <td>Ascent</td>
+                <td id="ascent">00:50:54</td>
+              </tr>
+              <tr>
+                <td>Descent</td>
+                <td id="descent">00:50:54</td>
+              </tr>
+              <tr>
+                <td>Calories</td>
+                <td id="calories">00:50:54</td>
+              </tr>
+              <tr>
+                <td>Average Heart Rate</td>
+                <td id="avgHeartRate">00:50:54</td>
+              </tr>
+              <tr>
+                <td>Max. Heart Rate</td>
+                <td id="maxHeartRate">00:50:54</td>
+              </tr>
+              <tr id="stepsLine">
+                <td>Steps</td>
+                <td id="steps">00:50:54</td>
+              </tr>
+              <tr id="stepsPMLine">
+                <td>Cadence (avg/max in steps/min)</td>
+                <td><span id="stepsPM">121</span>/<span id="maxStepsPM">121</span></td>
+              </tr>
+              <tr id="runIDLine">
+                <td>Run ID</td>
+                <td><span id="runID">121</span></td>
+              </tr>
+              <tr>
+                <td><a href="#" target="_blank" id="url">More details</a></td>
+                <td><a href="#" id="kmlUrl">KML file</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="credits">
+          Made with <a href="https://github.com/garz75/cyclemeter-runs-map" target="_blank">Cyclemeter Runs Map by Garz75</a>
+        </div>
+      </aside>
+      <div id="loading">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <div class="loading-text" role="status" aria-live="polite">Loading hikes and rides information</div>
       </div>
-      <script defer src="https://unpkg.com/@googlemaps/markerclusterer@2.5.0/dist/index.umd.js"></script>
-      <script defer language="javascript" type="text/javascript" src="code.js?v=20261121-1053"></script>
+    </div>
+    <script defer src="https://unpkg.com/@googlemaps/markerclusterer@2.5.0/dist/index.umd.js"></script>
+    <script defer language="javascript" type="text/javascript" src="code.js?v=20261122-1826"></script>
   </body>
 </html>

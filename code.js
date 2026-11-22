@@ -1,6 +1,8 @@
 var map = null;
 var bound = null;
 var appConfig = null;
+var detailsPanel = null;
+var detailsToggle = null;
 
 var getJSON = function (url, successHandler, errorHandler) {
   var xhr = typeof XMLHttpRequest != 'undefined'
@@ -24,6 +26,7 @@ var getJSON = function (url, successHandler, errorHandler) {
 };
 
 function startApp() {
+  setupLayoutControls();
   document.getElementById("loading").style.display = "flex";
   getJSON('controller.cgi?action=config',
     function (config) {
@@ -47,6 +50,203 @@ function startApp() {
       alert('Erreur Loading Configuration ' + status);
     }
   );
+}
+
+function setupLayoutControls() {
+  detailsPanel = document.getElementById("detailsPanel");
+  detailsToggle = document.getElementById("detailsToggle");
+  setupPanelDivider();
+  setupMobileBottomSheet();
+  var resetZoomLink = document.getElementById("resetZoomLink");
+  var zoomOutLink = document.getElementById("zoomOutLink");
+
+  if (detailsToggle && detailsPanel) {
+    detailsToggle.addEventListener('click', function () {
+      var collapsed = detailsPanel.classList.toggle('is-collapsed');
+      detailsToggle.setAttribute('aria-expanded', String(!collapsed));
+    });
+  }
+
+  if (resetZoomLink) {
+    resetZoomLink.addEventListener('click', function (event) {
+      event.preventDefault();
+      if (map && bound) {
+        map.fitBounds(bound);
+      }
+    });
+  }
+
+  if (zoomOutLink) {
+    zoomOutLink.addEventListener('click', function (event) {
+      event.preventDefault();
+      history.back();
+    });
+  }
+}
+
+function openDetailsPanel() {
+  if (!detailsPanel || !detailsToggle) {
+    return;
+  }
+  detailsPanel.classList.remove('is-collapsed');
+  detailsToggle.setAttribute('aria-expanded', 'true');
+}
+
+function setupMobileBottomSheet() {
+  var handle = document.getElementById('bottomSheetHandle');
+  var mobileQuery = window.matchMedia('(max-width: 767px)');
+  if (!detailsPanel || !detailsToggle || !handle) {
+    return;
+  }
+
+  function setSheetCollapsed(collapsed) {
+    detailsPanel.classList.toggle('is-collapsed', collapsed);
+    detailsToggle.setAttribute('aria-expanded', String(!collapsed));
+  }
+
+  var startY = null;
+  var dragDistance = 0;
+  var gestureActive = false;
+
+  function onTouchStart(event) {
+    if (!mobileQuery.matches || event.touches.length !== 1) {
+      return;
+    }
+    startY = event.touches[0].clientY;
+    dragDistance = 0;
+    gestureActive = true;
+    handle.classList.add('is-dragging');
+  }
+
+  function onTouchMove(event) {
+    if (!gestureActive || startY === null || event.touches.length !== 1) {
+      return;
+    }
+    dragDistance = event.touches[0].clientY - startY;
+  }
+
+  function finishTouchDrag() {
+    if (!gestureActive || startY === null) {
+      return;
+    }
+    handle.classList.remove('is-dragging');
+
+    if (dragDistance > 36) {
+      setSheetCollapsed(true);
+    } else if (dragDistance < -36) {
+      setSheetCollapsed(false);
+    }
+
+    startY = null;
+    dragDistance = 0;
+    gestureActive = false;
+  }
+
+  handle.addEventListener('touchstart', onTouchStart, { passive: true });
+  handle.addEventListener('touchmove', onTouchMove, { passive: true });
+  handle.addEventListener('touchend', finishTouchDrag, { passive: true });
+  handle.addEventListener('touchcancel', finishTouchDrag, { passive: true });
+
+  handle.addEventListener('keydown', function (event) {
+    if (!mobileQuery.matches) {
+      return;
+    }
+    if (event.key === 'ArrowDown' || event.key === 'Escape') {
+      event.preventDefault();
+      setSheetCollapsed(true);
+    } else if (event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      setSheetCollapsed(false);
+    }
+  });
+}
+
+function setupPanelDivider() {
+  var layout = document.querySelector('.app-layout');
+  var divider = document.getElementById('panelDivider');
+  var desktopQuery = window.matchMedia('(min-width: 768px)');
+  if (!layout || !divider) {
+    return;
+  }
+
+  function getWidthLimits() {
+    var rect = layout.getBoundingClientRect();
+    var minWidth = Math.min(280, Math.max(240, rect.width - 700));
+    var maxWidth = Math.min(700, rect.width - 320);
+    return {
+      min: Math.min(minWidth, maxWidth),
+      max: Math.max(minWidth, maxWidth)
+    };
+  }
+
+  function setDetailsWidth(width) {
+    var limits = getWidthLimits();
+    width = Math.max(limits.min, Math.min(limits.max, width));
+    layout.style.setProperty('--details-width', width + 'px');
+    divider.setAttribute('aria-valuemin', String(Math.round(limits.min)));
+    divider.setAttribute('aria-valuemax', String(Math.round(limits.max)));
+    divider.setAttribute('aria-valuenow', String(Math.round(width)));
+  }
+
+  setDetailsWidth(window.innerWidth * 0.20);
+
+  function resizeMap() {
+    window.requestAnimationFrame(function () {
+      if (map && typeof google !== 'undefined' &&
+          google.maps && google.maps.event) {
+        google.maps.event.trigger(map, 'resize');
+      }
+    });
+  }
+
+  divider.addEventListener('pointerdown', function (event) {
+    if (!desktopQuery.matches) {
+      return;
+    }
+    event.preventDefault();
+    divider.setPointerCapture(event.pointerId);
+    divider.classList.add('is-dragging');
+
+    function onPointerMove(moveEvent) {
+      var rect = layout.getBoundingClientRect();
+      var detailsWidth = rect.right - moveEvent.clientX - 4;
+      setDetailsWidth(detailsWidth);
+      resizeMap();
+    }
+
+    function onPointerUp() {
+      divider.classList.remove('is-dragging');
+      divider.removeEventListener('pointermove', onPointerMove);
+      divider.removeEventListener('pointerup', onPointerUp);
+      divider.removeEventListener('pointercancel', onPointerUp);
+      resizeMap();
+    }
+
+    divider.addEventListener('pointermove', onPointerMove);
+    divider.addEventListener('pointerup', onPointerUp);
+    divider.addEventListener('pointercancel', onPointerUp);
+  });
+
+  divider.addEventListener('keydown', function (event) {
+    if (!desktopQuery.matches || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+      return;
+    }
+    event.preventDefault();
+    var limits = getWidthLimits();
+    var currentWidth = detailsPanel.getBoundingClientRect().width;
+    if (event.key === 'ArrowLeft') {
+      setDetailsWidth(currentWidth + 24);
+    } else if (event.key === 'ArrowRight') {
+      setDetailsWidth(currentWidth - 24);
+    } else if (event.key === 'Home') {
+      setDetailsWidth(limits.min);
+    } else if (event.key === 'End') {
+      setDetailsWidth(limits.max);
+    }
+    resizeMap();
+  });
+
+  window.addEventListener('resize', resizeMap);
 }
 
 function waitForMapsAPI() {
@@ -402,7 +602,8 @@ var updateInfo = function (obj) {
         document.getElementById("address").innerHTML = 'Geocoder failed due to: ' + status;
       }
     });
-    div.style.display = "inline";
+    div.style.display = "block";
+    openDetailsPanel();
   }
 };
 var rememberMapBoundsInHistory = function (map, level) {

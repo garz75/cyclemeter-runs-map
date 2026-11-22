@@ -33,7 +33,13 @@ The starting-coordinate format is reverse engineered. It may change at any time 
  1. Configure your web server to execute `.cgi` files as CGI. For example, with Apache:
      `AddHandler cgi-script .cgi`
 
-`runs.json.cgi?config=1` exposes only the Maps API key and Map ID to the browser. Browser-visible Maps credentials must be protected with HTTP-referrer and API restrictions. The database path and any other server-only settings remain private.
+After the CGI refactor, browser/API calls are routed through `controller.cgi` actions:
+
+- `controller.cgi?action=config` exposes only the Maps API key and Map ID to the browser.
+- `controller.cgi?action=runs` returns activities with their starting coordinates and metadata.
+- `controller.cgi?action=kml&url=...` proxies only allowed KML URLs.
+
+Browser-visible Maps credentials must be protected with HTTP-referrer and API restrictions. The database path and any other server-only settings remain private.
 
  *Caveat*: Obviously, this web app will display personal details about your whereabouts, etc. Make sure to protect the web site with a password if you want some privacy...
 

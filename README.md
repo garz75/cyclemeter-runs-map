@@ -1,6 +1,6 @@
 # Cyclemeter Runs Map
 
-This is a simple map, using Google Maps JS API to display on a single Google map all your runs from your CycleMeter database. 
+This is a simple map, using Google Maps JS API to display on a single Google map all your runs from your CycleMeter database.
 
 ## How does this work
 
@@ -10,14 +10,20 @@ Cyclemeter allows you to share your workoute data from their web site. Once a wo
 This web application extracts the data from the sqlite3 database and builds a map to display every run stored in the database. It displays them as "clustered" markers on Google Maps. A click on a specific marker retrieves the run's KML through a same-origin proxy, converts its geometry to GeoJSON, and displays it with the Google Maps Data layer. See screenshots below.
 
 The CycleMeter DB file (Meter.db) needs to be uploaded from the iPhone to the web site where the web application runs. See the FAQ on [Cyclemeter Support site](http://abvio.com/question/transfer/) to see how to use iTunes file sharing to retrieve the file. You also need to have chosen to share the run information from Cyclemeter, as this app uses the hosted KML file to show the workout track on the map.
- 
+
 ## Requirement / Dependencies
- 
+
  1. A web server to host the static pages, the CGI script (perl), and the CycleMeter sqlite3 db.
  1. You will need a [Google Maps JavaScript API key](https://developers.google.com/maps/documentation/javascript/get-api-key#key-restrictions). Create it in a Google Cloud project with billing enabled, then enable both the **Maps JavaScript API** and **Geocoding API**. Restrict the key to the Maps JavaScript and Geocoding APIs and to your site's HTTP referrers.
  1. Advanced markers require a [Google Maps Map ID](https://developers.google.com/maps/documentation/get-map-id). Use your own JavaScript Map ID for production instead of `DEMO_MAP_ID`.
  1. Perl dependencies on the server: CGI, JSON::XS, DateTime, DBI, DBD::SQLite. `HTTP::Tiny` is used to proxy KML requests and is included in modern Perl distributions.
- 
+
+### CycleMeter database compatibility
+
+This application was tested with CycleMeter app version `12.1.62` (build `20489`). The app version is stored in the `meter.appVersion` column, and the build number is stored in `meter.appBuildNumber`.
+
+The starting-coordinate format is reverse engineered. It may change at any time and is not guaranteed to work with every database or future CycleMeter release.
+
 ## How to use it:
  1. Drop the files in a web accessible directory.
  1. Upload the CycleMeter Meter.db file to a non-web-accessible directory on the server.
@@ -27,14 +33,12 @@ The CycleMeter DB file (Meter.db) needs to be uploaded from the iPhone to the we
  1. Configure your web server to execute `.cgi` files as CGI. For example, with Apache:
      `AddHandler cgi-script .cgi`
 
-`controller.cgi?action=config` exposes only the Maps API key and Map ID to the browser. The `runs` action returns workout data, and the `kml` action proxies authorized KML files. Browser-visible Maps credentials must be protected with HTTP-referrer and API restrictions. The database path and any other server-only settings remain private.
-     
+`runs.json.cgi?config=1` exposes only the Maps API key and Map ID to the browser. Browser-visible Maps credentials must be protected with HTTP-referrer and API restrictions. The database path and any other server-only settings remain private.
+
  *Caveat*: Obviously, this web app will display personal details about your whereabouts, etc. Make sure to protect the web site with a password if you want some privacy...
-     
+
  ## Screenshots
- 
+
  ![Map view](img/map.png)
 
  ![Hike Details](img/hike_details.png)
-
- 

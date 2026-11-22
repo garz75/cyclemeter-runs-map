@@ -7,6 +7,7 @@ use JSON::XS;
 use DateTime;
 use DBI;
 use FindBin;
+use IO::Uncompress::Gunzip qw(gunzip);
 
 our $q = new CGI;
 my $config_file = "$FindBin::Bin/config.pl";
@@ -88,6 +89,53 @@ sub action_kml {
     print $response->{content};
 }
 
+sub extract_start_coordinates {
+    my ($location_blob, $compressed_coordinates) = @_;
+
+    if (defined $location_blob && length($location_blob) >= 16) {
+        # Recent locationBlob entries are reverse-engineered 56-byte records.
+        # Their first 16 bytes contain the starting coordinate: bytes 0-7 hold
+        # latitude and bytes 8-15 hold longitude, both as IEEE 754 doubles in
+        # little-endian byte order.
+        my ($latitude, $longitude) =
+            unpack('d< d<', substr($location_blob, 0, 16));
+
+        if ($latitude >= -90 && $latitude <= 90 &&
+            $longitude >= -180 && $longitude <= 180) {
+            return ($latitude, $longitude);
+        }
+    }
+
+    if (defined $compressed_coordinates) {
+        # Older activities store cCoordinate as a gzip stream. The decompressed
+        # value starts with two unsigned 32-bit integers: the first is latitude
+        # and the second is longitude. Each integer is normalized to the full
+        # 360-degree range, so latitude = lat_u32 * 360 / 2^32 and
+        # longitude = lon_u32 * 360 / 2^32.
+        my $coordinates;
+        gunzip(\$compressed_coordinates => \$coordinates);
+        return if !defined $coordinates || length($coordinates) < 8;
+
+        my ($latitude_u32, $longitude_u32) =
+            unpack('V V', substr($coordinates, 0, 8));
+        my $latitude_i32 = $latitude_u32 > 2147483647
+            ? $latitude_u32 - 4294967296
+            : $latitude_u32;
+        my $longitude_i32 = $longitude_u32 > 2147483647
+            ? $longitude_u32 - 4294967296
+            : $longitude_u32;
+        my $latitude = $latitude_i32 * 360 / 4294967296;
+        my $longitude = $longitude_i32 * 360 / 4294967296;
+
+        if ($latitude >= -90 && $latitude <= 90 &&
+            $longitude >= -180 && $longitude <= 180) {
+            return ($latitude, $longitude);
+        }
+    }
+
+    return;
+}
+
 sub action_runs {
     my $dbh = DBI->connect(
         "dbi:SQLite:dbname=$config->{cyclemeter_db_path}",
@@ -103,8 +151,8 @@ sub action_runs {
     my $statement = << "EOF";
 select
     run.runID,
-    latitude,
-    longitude,
+    substr(locationBlob.blob, 1, 16) as locationBlob,
+    run.cCoordinate,
     appinstanceid,
     starttimezone,
     activityID,
@@ -124,16 +172,16 @@ select
     avgHeartRate,
     maxHeartRate
 from
-    run,meter,coordinate
+    run
+    cross join meter
+    left join locationBlob on
+        locationBlob.runID = run.runID
+        and locationBlob.blobID = 0
 where
 -- make sure we actually did some something
     runtime > 0
 -- make sure it is not a path
     and routeID != -2
--- Join with the coordinate table to get the start point
-    and coordinate.runID = run.runID
--- Make sure we are at the first point...
-    and sequenceID = 0
 EOF
 
     my $sth = $dbh->prepare($statement);
@@ -185,6 +233,15 @@ EOF
     };
 
     while (my $d = $sth->fetchrow_hashref) {
+        my $location_blob = delete $d->{locationBlob};
+        my $compressed_coordinates = delete $d->{cCoordinate};
+        my ($latitude, $longitude) =
+            extract_start_coordinates($location_blob, $compressed_coordinates);
+        next if !defined $latitude || !defined $longitude;
+
+        $d->{latitude} = $latitude;
+        $d->{longitude} = $longitude;
+
         # For some reason, DateTime does not understand these TZ, so work around it
         $d->{startTimeZone} = 'Europe/Paris' if $d->{startTimeZone} eq "Etc/GMT-2";
         $d->{startTimeZone} = 'Europe/Paris' if $d->{startTimeZone} eq "GMT+0200";

@@ -49,4 +49,4 @@ Browser-visible Maps credentials must be protected with HTTP-referrer and API re
 
  ![Hike Details](img/hike_details.png)
 
- ![iPhone](img/iphone.png)
+ <img src="img/iphone.png" alt="iPhone" width="50%">

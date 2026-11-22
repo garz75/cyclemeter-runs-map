@@ -48,3 +48,5 @@ Browser-visible Maps credentials must be protected with HTTP-referrer and API re
  ![Map view](img/map.png)
 
  ![Hike Details](img/hike_details.png)
+
+ ![iPhone](img/iphone.png)
